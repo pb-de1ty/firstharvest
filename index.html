@@ -301,19 +301,185 @@ section { padding: 64px 5%; }
   display:flex; align-items:center; justify-content:center;
 }
 .cart-remove { background:none; border:none; color:var(--muted); cursor:pointer; font-size:.9rem; }
-.cart-footer { padding:20px 24px; border-top:1px solid #eee; }
-.cart-total { display:flex; justify-content:space-between; margin-bottom:16px; font-size:1.1rem; }
-.cart-total strong { font-family:'Playfair Display',serif; }
-.checkout-note { font-size:.78rem; color:var(--muted); margin-bottom:12px; line-height:1.5; }
+.cart-footer { padding:16px 24px; border-top:1px solid #eee; }
+.cart-summary-row { display:flex; justify-content:space-between; font-size:.88rem; color:var(--muted); margin-bottom:6px; }
+.cart-summary-row.total { font-size:1.1rem; color:var(--charcoal); font-weight:700; margin-top:10px; padding-top:10px; border-top:1px dashed #e0d8cc; }
+.cart-summary-row.discount { color:var(--green); }
 .btn-checkout {
   width:100%; background:var(--green); color:#fff; border:none;
   padding:14px; border-radius:30px; font-size:1rem; font-weight:700;
   cursor:pointer; font-family:'DM Sans',sans-serif;
-  transition: background .2s;
+  transition: background .2s; margin-top:14px;
 }
 .btn-checkout:hover { background:#1f4f39; }
-.contact-order { text-align:center; margin-top:10px; font-size:.8rem; color:var(--muted); }
-.contact-order a { color:var(--green); font-weight:600; text-decoration:none; }
+
+/* ── CHECKOUT MODAL ── */
+.co-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:400;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+  overflow-y:auto;
+}
+.co-overlay.open { opacity:1; pointer-events:all; }
+.co-modal {
+  background:#fff; border-radius:28px; width:100%; max-width:620px;
+  max-height:92vh; overflow-y:auto;
+  transform:translateY(40px); transition:transform .35s;
+  position:relative;
+}
+.co-overlay.open .co-modal { transform:translateY(0); }
+.co-close {
+  position:absolute; top:14px; right:14px;
+  background:rgba(0,0,0,.12); border:none; width:34px; height:34px;
+  border-radius:50%; cursor:pointer; font-size:1.1rem; color:var(--charcoal);
+  display:flex; align-items:center; justify-content:center; z-index:10;
+}
+.co-header { padding:28px 28px 0; }
+.co-header h2 { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:4px; }
+.co-header p { font-size:.82rem; color:var(--muted); }
+.co-steps { display:flex; gap:0; margin:20px 28px 0; border-bottom:2px solid #f0ebe0; }
+.co-step-tab {
+  padding:10px 0; margin-right:24px; font-size:.82rem; font-weight:600;
+  color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-2px;
+  cursor:pointer; transition:color .2s, border-color .2s; white-space:nowrap;
+}
+.co-step-tab.active { color:var(--green); border-color:var(--green); }
+.co-body { padding:24px 28px 28px; }
+.co-panel { display:none; }
+.co-panel.active { display:block; }
+
+/* Step 1 – Shipping */
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-row.full { grid-template-columns:1fr; }
+.form-group { display:flex; flex-direction:column; gap:5px; }
+.form-group label { font-size:.78rem; font-weight:600; color:var(--text); }
+.form-group input, .form-group select, .form-group textarea {
+  border:1.5px solid #e0d8cc; border-radius:12px; padding:10px 14px;
+  font-size:.88rem; font-family:'DM Sans',sans-serif; color:var(--text);
+  outline:none; background:#fff; transition:border-color .2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--green); }
+.form-group textarea { resize:vertical; min-height:70px; }
+.shipping-options { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+.ship-opt {
+  border:2px solid #e0d8cc; border-radius:14px; padding:14px;
+  cursor:pointer; transition:border-color .2s, background .2s;
+}
+.ship-opt:hover { border-color:var(--green-light); }
+.ship-opt.selected { border-color:var(--green); background:var(--green-pale); }
+.ship-opt-title { font-weight:700; font-size:.88rem; margin-bottom:2px; }
+.ship-opt-price { color:var(--green); font-size:.82rem; font-weight:600; }
+.ship-opt-desc { color:var(--muted); font-size:.75rem; margin-top:2px; }
+
+/* Step 2 – Payment */
+.pay-methods { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; }
+.pay-method {
+  border:2px solid #e0d8cc; border-radius:14px; padding:14px 10px;
+  text-align:center; cursor:pointer; transition:border-color .2s, background .2s;
+}
+.pay-method:hover { border-color:var(--green-light); }
+.pay-method.selected { border-color:var(--green); background:var(--green-pale); }
+.pay-icon { font-size:1.8rem; margin-bottom:4px; }
+.pay-name { font-size:.78rem; font-weight:700; color:var(--charcoal); }
+.pay-detail { font-size:.7rem; color:var(--muted); margin-top:1px; }
+.qr-box {
+  background:var(--cream); border-radius:16px; padding:20px;
+  text-align:center; margin-bottom:16px; display:none;
+}
+.qr-box.show { display:block; }
+.qr-placeholder {
+  width:160px; height:160px; background:#fff; border:2px dashed #ccc;
+  border-radius:12px; margin:0 auto 10px;
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:6px; color:var(--muted); font-size:.78rem;
+}
+.qr-placeholder span { font-size:2.5rem; }
+.qr-account { font-size:.82rem; color:var(--text); font-weight:600; margin-bottom:4px; }
+.qr-note { font-size:.75rem; color:var(--muted); }
+
+/* Step 3 – Summary */
+.receipt-upload {
+  border:2px dashed #c9a87c; border-radius:14px; padding:20px;
+  text-align:center; cursor:pointer; transition:background .2s; margin-bottom:16px;
+  background:#fffdf7;
+}
+.receipt-upload:hover { background:var(--cream); }
+.receipt-upload input { display:none; }
+.receipt-icon { font-size:2rem; margin-bottom:6px; }
+.receipt-label { font-size:.85rem; font-weight:600; color:var(--earth); margin-bottom:2px; }
+.receipt-sublabel { font-size:.75rem; color:var(--muted); }
+.receipt-preview { max-width:100%; border-radius:10px; margin-top:10px; display:none; max-height:180px; object-fit:contain; }
+.receipt-filename { font-size:.78rem; color:var(--green); margin-top:6px; font-weight:600; }
+
+.order-summary-items { margin-bottom:16px; }
+.os-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f0ebe0; font-size:.85rem; }
+.os-item:last-child { border:none; }
+.os-breakdown { background:var(--cream); border-radius:12px; padding:14px 16px; font-size:.85rem; }
+.os-row { display:flex; justify-content:space-between; margin-bottom:6px; color:var(--text); }
+.os-row.green { color:var(--green); font-weight:600; }
+.os-row.total { font-size:1.05rem; font-weight:800; color:var(--charcoal); border-top:1px dashed #ccc; padding-top:8px; margin-top:4px; }
+
+/* Discount */
+.discount-row { display:flex; gap:8px; margin-bottom:16px; }
+.discount-input {
+  flex:1; border:1.5px solid #e0d8cc; border-radius:12px; padding:10px 14px;
+  font-size:.88rem; font-family:'DM Sans',sans-serif; outline:none;
+  transition:border-color .2s; text-transform:uppercase;
+}
+.discount-input:focus { border-color:var(--green); }
+.discount-btn {
+  background:var(--earth); color:#fff; border:none; padding:10px 18px;
+  border-radius:12px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+  font-size:.85rem; transition:background .2s;
+}
+.discount-btn:hover { background:#6b4428; }
+.discount-msg { font-size:.78rem; margin-top:-10px; margin-bottom:10px; }
+.discount-msg.ok { color:var(--green); }
+.discount-msg.err { color:var(--red); }
+
+/* Tip */
+.tip-options { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.tip-btn {
+  border:2px solid #e0d8cc; background:#fff; border-radius:20px;
+  padding:7px 16px; font-size:.8rem; font-weight:600; cursor:pointer;
+  font-family:'DM Sans',sans-serif; color:var(--text); transition:all .2s;
+}
+.tip-btn.selected { border-color:var(--earth); background:var(--earth); color:#fff; }
+.tip-custom-wrap { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.tip-custom-label { font-size:.82rem; color:var(--muted); white-space:nowrap; }
+.tip-custom-input {
+  flex:1; border:1.5px solid #e0d8cc; border-radius:10px; padding:8px 12px;
+  font-size:.88rem; font-family:'DM Sans',sans-serif; outline:none;
+}
+
+/* Nav buttons */
+.co-nav { display:flex; gap:10px; margin-top:20px; }
+.co-back {
+  background:#f0ebe0; color:var(--text); border:none; padding:12px 22px;
+  border-radius:24px; font-weight:600; font-size:.9rem; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:background .2s;
+}
+.co-back:hover { background:#e0d8cc; }
+.co-next {
+  flex:1; background:var(--green); color:#fff; border:none; padding:12px;
+  border-radius:24px; font-weight:700; font-size:.95rem; cursor:pointer;
+  font-family:'DM Sans',sans-serif; transition:background .2s;
+}
+.co-next:hover { background:#1f4f39; }
+.co-next:disabled { background:#ccc; cursor:not-allowed; }
+.success-box { text-align:center; padding:32px 16px; }
+.success-icon { font-size:3.5rem; margin-bottom:16px; }
+.success-title { font-family:'Playfair Display',serif; font-size:1.6rem; margin-bottom:8px; }
+.success-msg { font-size:.88rem; color:var(--muted); line-height:1.7; margin-bottom:20px; }
+.success-wa { background:#25d366; color:#fff; border:none; padding:13px 28px; border-radius:30px; font-weight:700; font-size:.95rem; cursor:pointer; font-family:'DM Sans',sans-serif; }
+
+@media(max-width:540px){
+  .pay-methods { grid-template-columns:1fr 1fr; }
+  .form-row { grid-template-columns:1fr; }
+  .co-body { padding:20px 18px 24px; }
+  .co-header { padding:24px 18px 0; }
+  .co-steps { margin-left:18px; margin-right:18px; }
+}
 
 /* ── PRODUCT MODAL ── */
 .modal-overlay {
@@ -567,7 +733,7 @@ footer {
       <div class="footer-social">
         <a href="#" class="social-btn" aria-label="Facebook">f</a>
         <a href="#" class="social-btn" aria-label="Instagram">📸</a>
-        <a href="https://wa.me/63" class="social-btn" aria-label="WhatsApp">💬</a>
+        <a href="https://wa.me/639776033476" class="social-btn" aria-label="WhatsApp">💬</a>
       </div>
     </div>
     <div class="footer-col">
@@ -606,15 +772,244 @@ footer {
     </div>
   </div>
   <div class="cart-footer">
-    <div class="cart-total">
-      <span>Total</span>
-      <strong id="cartTotal">₱0.00</strong>
-    </div>
-    <p class="checkout-note">💬 To complete your order, message us on Facebook or WhatsApp with your cart details. We'll arrange delivery or pickup!</p>
-    <button class="btn-checkout" onclick="sendOrder()">📩 Send Order via WhatsApp</button>
-    <p class="contact-order">or <a href="#">message us on Facebook</a></p>
+    <div class="cart-summary-row"><span>Subtotal</span><span id="cartSubtotal">₱0.00</span></div>
+    <div class="cart-summary-row discount" id="cartDiscountRow" style="display:none"><span>Discount 🏷️</span><span id="cartDiscountAmt">-₱0.00</span></div>
+    <div class="cart-summary-row"><span>Shipping</span><span id="cartShipping">Select at checkout</span></div>
+    <div class="cart-summary-row"><span>Tip 💚</span><span id="cartTipAmt">₱0.00</span></div>
+    <div class="cart-summary-row total"><span>Total</span><strong id="cartTotal">₱0.00</strong></div>
+    <button class="btn-checkout" onclick="openCheckout()">Proceed to Checkout →</button>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════
+     CHECKOUT MODAL (3-step)
+═══════════════════════════════════════ -->
+<div class="co-overlay" id="coOverlay" onclick="coOverlayClick(event)">
+  <div class="co-modal" id="coModal">
+    <button class="co-close" onclick="closeCheckout()">×</button>
+
+    <div class="co-header">
+      <h2>🛒 Checkout</h2>
+      <p>First Harvest · Gawad Kalinga Community Products</p>
+    </div>
+
+    <!-- STEP TABS -->
+    <div class="co-steps">
+      <div class="co-step-tab active" id="tab1">1. Shipping</div>
+      <div class="co-step-tab" id="tab2">2. Payment & Confirm</div>
+    </div>
+
+    <div class="co-body">
+
+      <!-- ── STEP 1: CONTACT & SHIPPING ── -->
+      <div class="co-panel active" id="panel1">
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">📦 Where should we send your order?</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" id="coFirst" placeholder="Juan" oninput="checkStep1()">
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input type="text" id="coLast" placeholder="dela Cruz" oninput="checkStep1()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mobile Number *</label>
+            <input type="tel" id="coPhone" placeholder="09XX XXX XXXX" oninput="checkStep1()">
+          </div>
+          <div class="form-group">
+            <label>Email (optional)</label>
+            <input type="email" id="coEmail" placeholder="juan@email.com">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Complete Address *</label>
+            <input type="text" id="coAddress" placeholder="House/Unit No., Street, Barangay" oninput="checkStep1()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City / Municipality *</label>
+            <input type="text" id="coCity" placeholder="e.g. Quezon City" oninput="checkStep1()">
+          </div>
+          <div class="form-group">
+            <label>Province *</label>
+            <input type="text" id="coProvince" placeholder="e.g. Metro Manila" oninput="checkStep1()">
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>Order Notes (optional)</label>
+            <textarea id="coNotes" placeholder="Special instructions, landmark, preferred delivery time..."></textarea>
+          </div>
+        </div>
+
+        <p style="font-size:.82rem;font-weight:700;color:var(--charcoal);margin-bottom:10px;">🚚 Shipping Zone</p>
+        <div class="shipping-options">
+          <div class="ship-opt" id="shipMM" onclick="selectShipping('mm',this);checkStep1()">
+            <div class="ship-opt-title">📍 Metro Manila</div>
+            <div class="ship-opt-price">₱100.00</div>
+            <div class="ship-opt-desc">NCR delivery</div>
+          </div>
+          <div class="ship-opt" id="shipOut" onclick="selectShipping('outside',this);checkStep1()">
+            <div class="ship-opt-title">🗺️ Outside Metro Manila</div>
+            <div class="ship-opt-price">₱250.00</div>
+            <div class="ship-opt-desc">Provincial / all other areas</div>
+          </div>
+        </div>
+
+        <div class="co-nav">
+          <button class="co-next" id="btnStep1Next" disabled onclick="goStep(2)">Next: Payment & Confirm →</button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: PAYMENT + CONFIRM (combined) ── -->
+      <div class="co-panel" id="panel2">
+        <p style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">💳 Choose your payment method</p>
+
+        <div class="pay-methods">
+          <div class="pay-method" onclick="selectPayment('gcash',this)">
+            <div class="pay-icon">📱</div>
+            <div class="pay-name">GCash</div>
+            <div class="pay-detail">QR Code</div>
+          </div>
+          <div class="pay-method" onclick="selectPayment('bpi',this)">
+            <div class="pay-icon">🏦</div>
+            <div class="pay-name">BPI</div>
+            <div class="pay-detail">QR Code</div>
+          </div>
+          <div class="pay-method" onclick="selectPayment('paypal',this)">
+            <div class="pay-icon">🌐</div>
+            <div class="pay-name">PayPal</div>
+            <div class="pay-detail">Online</div>
+          </div>
+        </div>
+
+        <!-- GCash QR -->
+        <div class="qr-box" id="qrGcash">
+          <div class="qr-account">GCash · <strong>First Harvest GK</strong></div>
+          <div class="qr-placeholder">
+            <span>📱</span>
+            <span>GCash QR</span>
+            <span style="font-size:.65rem;">(Replace with your QR image)</span>
+          </div>
+          <div class="qr-note">Account Name: <strong>First Harvest GK</strong><br>Number: <strong>09XX XXX XXXX</strong></div>
+          <div class="qr-note" style="margin-top:6px;color:var(--earth);">📌 Screenshot this QR, open GCash → Pay QR</div>
+        </div>
+
+        <!-- BPI QR -->
+        <div class="qr-box" id="qrBpi">
+          <div class="qr-account">BPI · <strong>First Harvest GK Account</strong></div>
+          <div class="qr-placeholder">
+            <span>🏦</span>
+            <span>BPI QR</span>
+            <span style="font-size:.65rem;">(Replace with your QR image)</span>
+          </div>
+          <div class="qr-note">Account Name: <strong>First Harvest GK</strong><br>Account No: <strong>XXXX-XXXX-XX</strong></div>
+          <div class="qr-note" style="margin-top:6px;color:var(--earth);">📌 Open BPI app → Send Money → Scan QR</div>
+        </div>
+
+        <!-- PayPal -->
+        <div class="qr-box" id="qrPaypal">
+          <div class="qr-account">PayPal · <strong>First Harvest</strong></div>
+          <div class="qr-placeholder">
+            <span>🌐</span>
+            <span>PayPal</span>
+          </div>
+          <div class="qr-note">Send payment to:<br><strong>firstharvest@email.com</strong></div>
+          <div class="qr-note" style="margin-top:6px;color:var(--earth);">📌 Use "Friends & Family" to avoid fees, or add 4% for "Goods & Services"</div>
+        </div>
+
+        <!-- Tip Section -->
+        <div style="background:var(--cream);border-radius:14px;padding:16px;margin-bottom:16px;">
+          <p style="font-size:.82rem;font-weight:700;color:var(--earth);margin-bottom:8px;">💚 Add a Tip for Our Kapitbahayan</p>
+          <p style="font-size:.75rem;color:var(--muted);margin-bottom:10px;">Your tip goes directly to the community members who handcraft every product with love!</p>
+          <div class="tip-options">
+            <button class="tip-btn" onclick="setTip(0,this)">No tip</button>
+            <button class="tip-btn" onclick="setTip(20,this)">₱20</button>
+            <button class="tip-btn" onclick="setTip(50,this)">₱50</button>
+            <button class="tip-btn" onclick="setTip(100,this)">₱100</button>
+            <button class="tip-btn" onclick="setTip('custom',this)">Custom</button>
+          </div>
+          <div class="tip-custom-wrap" id="tipCustomWrap" style="display:none">
+            <span class="tip-custom-label">₱</span>
+            <input class="tip-custom-input" type="number" id="tipCustomInput" placeholder="Enter amount" oninput="updateTipCustom()">
+          </div>
+        </div>
+
+        <!-- Discount Code -->
+        <p style="font-size:.82rem;font-weight:700;color:var(--charcoal);margin-bottom:8px;">🏷️ Discount Code</p>
+        <div class="discount-row">
+          <input class="discount-input" type="text" id="discountInput" placeholder="Enter code (e.g. HARVEST10)">
+          <button class="discount-btn" onclick="applyDiscount()">Apply</button>
+        </div>
+        <div class="discount-msg" id="discountMsg"></div>
+
+        <!-- Order Summary -->
+        <p style="font-size:.82rem;font-weight:700;color:var(--charcoal);margin-bottom:10px;">📋 Order Summary</p>
+        <div class="order-summary-items" id="osSummaryItems"></div>
+        <div class="os-breakdown">
+          <div class="os-row"><span>Subtotal</span><span id="osSubtotal">₱0.00</span></div>
+          <div class="os-row green" id="osDiscountRow" style="display:none"><span>Discount 🏷️</span><span id="osDiscount">-₱0.00</span></div>
+          <div class="os-row"><span>Shipping</span><span id="osShipping">₱0.00</span></div>
+          <div class="os-row"><span>Tip 💚</span><span id="osTip">₱0.00</span></div>
+          <div class="os-row total"><span>Grand Total</span><span id="osTotal">₱0.00</span></div>
+        </div>
+
+        <!-- Shipping Info Summary -->
+        <div style="background:#f0faf5;border-radius:12px;padding:12px 16px;margin-top:12px;font-size:.8rem;color:var(--text);">
+          <strong style="display:block;margin-bottom:4px;color:var(--green);">📦 Deliver to:</strong>
+          <span id="osShipInfo">—</span>
+        </div>
+
+        <!-- Payment Summary -->
+        <div style="background:#f0faf5;border-radius:12px;padding:12px 16px;margin-top:8px;font-size:.8rem;color:var(--text);">
+          <strong style="display:block;margin-bottom:4px;color:var(--green);">💳 Payment via:</strong>
+          <span id="osPayMethod">—</span>
+        </div>
+
+        <!-- WhatsApp Receipt Instruction -->
+        <div style="background:#e7f9ee;border:1.5px solid #b7e4c7;border-radius:14px;padding:16px 18px;margin-top:4px;">
+          <p style="font-size:.82rem;font-weight:700;color:#1b4332;margin-bottom:10px;">📎 How to Send Your Payment Receipt</p>
+          <ol style="padding-left:18px;margin:0;display:flex;flex-direction:column;gap:7px;">
+            <li style="font-size:.81rem;color:#333330;line-height:1.5;">Click <strong>"✅ Place Order"</strong> below — this will open WhatsApp with your order details pre-filled.</li>
+            <li style="font-size:.81rem;color:#333330;line-height:1.5;">Send the message to First Harvest.</li>
+            <li style="font-size:.81rem;color:#333330;line-height:1.5;">In the <strong>same WhatsApp chat</strong>, tap the 📎 <strong>attachment icon</strong> and select your payment screenshot (GCash / BPI / PayPal).</li>
+            <li style="font-size:.81rem;color:#333330;line-height:1.5;">Send the photo — we'll confirm your order within 24 hours! 🌾</li>
+          </ol>
+        </div>
+
+        <div class="co-nav">
+          <button class="co-back" onclick="goStep(1)">← Back</button>
+          <button class="co-next" onclick="placeOrder()">✅ Place Order</button>
+        </div>
+      </div>
+
+      <!-- ── SUCCESS ── -->
+      <div class="co-panel" id="panelSuccess">
+        <div class="success-box">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">Order Sent!</div>
+          <p class="success-msg">Salamat! 🌾 Your order details have been sent to First Harvest via WhatsApp.</p>
+          <div style="background:#e7f9ee;border:1.5px solid #b7e4c7;border-radius:14px;padding:14px 16px;margin:0 auto 20px;max-width:360px;text-align:left;">
+            <p style="font-size:.8rem;font-weight:700;color:#1b4332;margin-bottom:8px;">📎 Last step — send your receipt!</p>
+            <ol style="padding-left:16px;margin:0;display:flex;flex-direction:column;gap:6px;">
+              <li style="font-size:.79rem;color:#333330;line-height:1.5;">Go to the <strong>WhatsApp chat</strong> you just opened.</li>
+              <li style="font-size:.79rem;color:#333330;line-height:1.5;">Tap the 📎 <strong>attachment icon</strong>.</li>
+              <li style="font-size:.79rem;color:#333330;line-height:1.5;">Select and send your <strong>payment screenshot</strong> (GCash / BPI / PayPal).</li>
+            </ol>
+          </div>
+          <button class="success-wa" onclick="sendWhatsApp()">💬 Open WhatsApp Again</button>
+          <p style="font-size:.75rem;color:var(--muted);margin-top:12px;">We'll confirm your order within 24 hours via <span id="successPhone">your number</span> 🌿</p>
+        </div>
+      </div>
+
+    </div><!-- co-body -->
+  </div><!-- co-modal -->
+</div><!-- co-overlay -->
 
 <!-- PRODUCT MODAL -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
@@ -889,12 +1284,248 @@ function showToast(msg) {
   setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-function sendOrder() {
-  if (cart.length===0) { showToast('Your cart is empty!'); return; }
+// ══════════════════════════════
+// CHECKOUT STATE
+// ══════════════════════════════
+let shippingZone = null;   // 'mm' | 'outside'
+let shippingFee  = 0;
+let tipAmount    = 0;
+let payMethod    = null;
+let discountPct  = 0;      // e.g. 10 = 10%
+let discountAmt  = 0;
+
+// ── DISCOUNT CODES (add more here anytime) ──
+const DISCOUNT_CODES = {
+  'HARVEST10': { type:'percent', value:10, label:'10% off – Welcome discount!' },
+  'GK2025':    { type:'percent', value:15, label:'15% off – GK Community code!' },
+  'FIRSTORDER':{ type:'fixed',   value:50, label:'₱50 off – First order promo!' },
+  // Add future codes below:
+  // 'SUMMER25': { type:'percent', value:25, label:'25% Summer Sale!' },
+};
+
+function getSubtotal() { return cart.reduce((s,c)=>s+c.price*c.qty,0); }
+function getDiscount(sub) {
+  if (!discountPct && !discountAmt) return 0;
+  if (discountAmt) return discountAmt;
+  return Math.round(sub * discountPct / 100);
+}
+function getGrandTotal() {
+  const sub = getSubtotal();
+  return Math.max(0, sub - getDiscount(sub)) + shippingFee + tipAmount;
+}
+
+function updateCartUI() {
+  const count = cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('cartCount').textContent = count;
+  const sub = getSubtotal();
+  const disc = getDiscount(sub);
+  document.getElementById('cartSubtotal').textContent = `₱${sub.toFixed(2)}`;
+  // discount row
+  const dRow = document.getElementById('cartDiscountRow');
+  if (disc > 0) { dRow.style.display='flex'; document.getElementById('cartDiscountAmt').textContent=`-₱${disc.toFixed(2)}`; }
+  else dRow.style.display='none';
+  document.getElementById('cartShipping').textContent = shippingFee ? `₱${shippingFee.toFixed(2)}` : 'Select at checkout';
+  document.getElementById('cartTipAmt').textContent = `₱${tipAmount.toFixed(2)}`;
+  document.getElementById('cartTotal').textContent = `₱${getGrandTotal().toFixed(2)}`;
+
+  const el = document.getElementById('cartItems');
+  if (cart.length === 0) {
+    el.innerHTML = '<div class="cart-empty"><div class="empty-icon">🛒</div><p>Your cart is empty</p><p style="font-size:.82rem;color:var(--muted);margin-top:8px;">Add some First Harvest goodness!</p></div>';
+    return;
+  }
+  el.innerHTML = cart.map(c => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${c.img}" alt="${c.name}">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-price">₱${(c.price*c.qty).toFixed(2)}</div>
+        <div class="cart-qty">
+          <button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button>
+          <span>${c.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${c.id},1)">+</button>
+          <button class="cart-remove" onclick="removeFromCart(${c.id})">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── CHECKOUT OPEN/CLOSE ──
+function openCheckout() {
+  if (cart.length === 0) { showToast('Your cart is empty!'); return; }
+  toggleCart();
+  // Reset shipping/payment state
+  shippingZone = null; shippingFee = 0; payMethod = null;
+  document.querySelectorAll('.ship-opt').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('.pay-method').forEach(o=>o.classList.remove('selected'));
+  ['gcash','bpi','paypal'].forEach(m=>{
+    const b=document.getElementById('qr'+m.charAt(0).toUpperCase()+m.slice(1));
+    if(b) b.classList.remove('show');
+  });
+  document.getElementById('btnStep1Next').disabled = true;
+  goStep(1);
+  document.getElementById('coOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCheckout() {
+  document.getElementById('coOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function coOverlayClick(e) { if(e.target===document.getElementById('coOverlay')) closeCheckout(); }
+
+// ── STEP 1 LIVE VALIDATION (enables/disables Next button) ──
+function checkStep1() {
+  const req = ['coFirst','coLast','coPhone','coAddress','coCity','coProvince'];
+  const allFilled = req.every(id => document.getElementById(id).value.trim() !== '');
+  const hasShipping = shippingZone !== null;
+  document.getElementById('btnStep1Next').disabled = !(allFilled && hasShipping);
+}
+
+// ── STEP NAVIGATION ──
+function goStep(n) {
+  [1, 2, 'Success'].forEach(s => {
+    const p = document.getElementById('panel' + (s === 'Success' ? 'Success' : s));
+    const t = document.getElementById('tab' + s);
+    if (p) p.classList.remove('active');
+    if (t) t.classList.remove('active');
+  });
+  if (n === 'success') {
+    document.getElementById('panelSuccess').classList.add('active');
+    return;
+  }
+  // Validate before advancing
+  if (n === 2 && !validateStep1()) return;
+  document.getElementById('panel' + n).classList.add('active');
+  document.getElementById('tab' + n).classList.add('active');
+  if (n === 2) renderOrderSummary();
+}
+
+function validateStep1() {
+  const req = ['coFirst','coLast','coPhone','coAddress','coCity','coProvince'];
+  for (const id of req) {
+    if (!document.getElementById(id).value.trim()) {
+      showToast('⚠️ Please fill in all required fields.'); return false;
+    }
+  }
+  if (!shippingZone) { showToast('⚠️ Please select a shipping zone.'); return false; }
+  return true;
+}
+
+// ── SHIPPING ──
+function selectShipping(zone, el) {
+  shippingZone = zone;
+  shippingFee  = zone === 'mm' ? 100 : 250;
+  document.querySelectorAll('.ship-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  updateCartUI();
+}
+
+// ── PAYMENT ──
+function selectPayment(method, el) {
+  payMethod = method;
+  document.querySelectorAll('.pay-method').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  ['gcash','bpi','paypal'].forEach(m => {
+    const box = document.getElementById('qr'+m.charAt(0).toUpperCase()+m.slice(1));
+    if (box) box.classList.remove('show');
+  });
+  const key = 'qr'+method.charAt(0).toUpperCase()+method.slice(1);
+  const box = document.getElementById(key);
+  if (box) box.classList.add('show');
+  // Update live payment label in summary
+  const methodNames = { gcash:'GCash (QR Code)', bpi:'BPI (QR Code)', paypal:'PayPal' };
+  const lbl = document.getElementById('osPayMethod');
+  if (lbl) lbl.textContent = methodNames[method] || '—';
+}
+
+// ── TIP ──
+function setTip(val, el) {
+  document.querySelectorAll('.tip-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  const wrap = document.getElementById('tipCustomWrap');
+  if (val === 'custom') { wrap.style.display='flex'; return; }
+  wrap.style.display='none';
+  tipAmount = val;
+  updateCartUI();
+}
+function updateTipCustom() {
+  tipAmount = parseFloat(document.getElementById('tipCustomInput').value) || 0;
+  updateCartUI();
+}
+
+// ── DISCOUNT ──
+function applyDiscount() {
+  const code = document.getElementById('discountInput').value.trim().toUpperCase();
+  const msg  = document.getElementById('discountMsg');
+  discountPct = 0; discountAmt = 0;
+  if (!code) { msg.className='discount-msg err'; msg.textContent='Please enter a code.'; return; }
+  const found = DISCOUNT_CODES[code];
+  if (!found) { msg.className='discount-msg err'; msg.textContent='❌ Invalid or expired code.'; return; }
+  if (found.type==='percent') discountPct = found.value;
+  else discountAmt = found.value;
+  msg.className='discount-msg ok'; msg.textContent='✅ ' + found.label;
+  updateCartUI();
+  renderOrderSummary();
+}
+
+// ── ORDER SUMMARY (Step 2) ──
+function renderOrderSummary() {
+  const sub  = getSubtotal();
+  const disc = getDiscount(sub);
+  const grand = getGrandTotal();
+  document.getElementById('osSummaryItems').innerHTML = cart.map(c=>
+    `<div class="os-item"><span>${c.name} ×${c.qty}</span><span>₱${(c.price*c.qty).toFixed(2)}</span></div>`
+  ).join('');
+  document.getElementById('osSubtotal').textContent = `₱${sub.toFixed(2)}`;
+  const dRow = document.getElementById('osDiscountRow');
+  if (disc > 0) { dRow.style.display='flex'; document.getElementById('osDiscount').textContent=`-₱${disc.toFixed(2)}`; }
+  else dRow.style.display='none';
+  document.getElementById('osShipping').textContent = `₱${shippingFee.toFixed(2)} (${shippingZone==='mm'?'Metro Manila':'Outside MM'})`;
+  document.getElementById('osTip').textContent = `₱${tipAmount.toFixed(2)}`;
+  document.getElementById('osTotal').textContent = `₱${grand.toFixed(2)}`;
+  const first = document.getElementById('coFirst').value;
+  const last  = document.getElementById('coLast').value;
+  const phone = document.getElementById('coPhone').value;
+  const addr  = document.getElementById('coAddress').value;
+  const city  = document.getElementById('coCity').value;
+  const prov  = document.getElementById('coProvince').value;
+  document.getElementById('osShipInfo').textContent = `${first} ${last} · ${phone} · ${addr}, ${city}, ${prov}`;
+  const methodNames = { gcash:'GCash (QR Code)', bpi:'BPI (QR Code)', paypal:'PayPal' };
+  document.getElementById('osPayMethod').textContent = methodNames[payMethod] || '—';
+}
+
+// ── PLACE ORDER ──
+function placeOrder() {
+  document.getElementById('successPhone').textContent = document.getElementById('coPhone').value || 'your number';
+  goStep('success');
+}
+
+// ── SEND VIA WHATSAPP ──
+function sendWhatsApp() {
+  const first = document.getElementById('coFirst').value;
+  const last  = document.getElementById('coLast').value;
+  const phone = document.getElementById('coPhone').value;
+  const addr  = document.getElementById('coAddress').value;
+  const city  = document.getElementById('coCity').value;
+  const prov  = document.getElementById('coProvince').value;
+  const notes = document.getElementById('coNotes').value;
+  const sub   = getSubtotal();
+  const disc  = getDiscount(sub);
+  const grand = getGrandTotal();
+  const methodNames = { gcash:'GCash', bpi:'BPI QR', paypal:'PayPal' };
   const lines = cart.map(c=>`• ${c.name} x${c.qty} = ₱${(c.price*c.qty).toFixed(2)}`).join('%0A');
-  const total = cart.reduce((s,c)=>s+c.price*c.qty,0);
-  const msg = `Hello First Harvest! I'd like to order:%0A%0A${lines}%0A%0ATotal: ₱${total.toFixed(2)}%0A%0APlease let me know how to arrange delivery. Thank you!`;
-  window.open(`https://wa.me/63?text=${msg}`, '_blank');
+  let msg = `Hello First Harvest! 🌾 I'd like to place an order:%0A%0A`;
+  msg += `*ORDER ITEMS:*%0A${lines}%0A%0A`;
+  msg += `Subtotal: ₱${sub.toFixed(2)}%0A`;
+  if (disc>0) msg += `Discount: -₱${disc.toFixed(2)}%0A`;
+  msg += `Shipping (${shippingZone==='mm'?'Metro Manila':'Outside MM'}): ₱${shippingFee.toFixed(2)}%0A`;
+  msg += `Tip: ₱${tipAmount.toFixed(2)}%0A`;
+  msg += `*GRAND TOTAL: ₱${grand.toFixed(2)}*%0A%0A`;
+  msg += `*SHIP TO:*%0A${first} ${last}%0A${phone}%0A${addr}, ${city}, ${prov}%0A`;
+  if (notes) msg += `Notes: ${notes}%0A`;
+  msg += `%0A*PAYMENT:* ${methodNames[payMethod]||'—'}%0A`;
+  msg += `%0A(Receipt attached separately)%0A%0ASalamat po! 🙏`;
+  window.open(`https://wa.me/639776033476?text=${msg}`, '_blank');
 }
 
 // INIT
