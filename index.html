@@ -52,11 +52,20 @@ header {
 .logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
 .logo-icon {
   width: 40px; height: 40px;
-  background: var(--green);
+  background: #5d100a;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 18px;
 }
+
+.logo-icon img {
+  max-height: 48px;   /* controls header height */
+  height: auto;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
 .logo-text { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--green); font-weight: 700; }
 .logo-tagline { font-size: .65rem; color: var(--muted); letter-spacing:.08em; text-transform:uppercase; }
 
@@ -409,7 +418,11 @@ footer {
 <!-- HEADER -->
 <header>
   <a href="#" class="logo" onclick="filterCategory('all');return false;">
-    <div class="logo-icon">🌾</div>
+    <div class="logo-icon">
+  <img
+    src="FirstHarvest_Transparent_Logo.png"
+  />
+</div>
     <div>
       <div class="logo-text">First Harvest</div>
       <div class="logo-tagline">Uplifting Farmers, Nourishing Lives</div>
@@ -543,7 +556,11 @@ footer {
   <div class="footer-grid">
     <div class="footer-brand">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <div class="logo-icon">🌾</div>
+    <div class="logo-icon">
+  <img
+    src="FirstHarvest_Transparent_Logo.png"
+  />
+</div>
         <span class="logo-text">First Harvest</span>
       </div>
       <p class="footer-tagline">Uplifting Farmers, Nourishing Lives.<br>Handcrafted food from Gawad Kalinga communities across the Philippines.</p>
@@ -562,7 +579,7 @@ footer {
     </div>
     <div class="footer-col">
       <h4>Order & Contact</h4>
-      <a href="#">📍 Gawad Kalinga, Philippines</a>
+      <a href="#">📍 212 Haig St Daang Bakal Mandaluyong City - Gawad Kalinga Headquarters, Philippines</a>
       <a href="mailto:firstharvest@gawadkalinga.com">✉️ Email Us</a>
       <a href="https://wa.me/63">💬 Message on WhatsApp</a>
       <a href="#">📦 How to Order</a>
