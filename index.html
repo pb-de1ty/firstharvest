@@ -733,7 +733,7 @@ footer {
       <div class="footer-social">
         <a href="#" class="social-btn" aria-label="Facebook">f</a>
         <a href="#" class="social-btn" aria-label="Instagram">📸</a>
-        <a href="https://wa.me/639776033476" class="social-btn" aria-label="WhatsApp">💬</a>
+        <a href="https://wa.me/63" class="social-btn" aria-label="WhatsApp">💬</a>
       </div>
     </div>
     <div class="footer-col">
@@ -1447,10 +1447,12 @@ function setTip(val, el) {
   wrap.style.display='none';
   tipAmount = val;
   updateCartUI();
+  renderOrderSummary();
 }
 function updateTipCustom() {
   tipAmount = parseFloat(document.getElementById('tipCustomInput').value) || 0;
   updateCartUI();
+  renderOrderSummary();
 }
 
 // ── DISCOUNT ──
@@ -1525,7 +1527,7 @@ function sendWhatsApp() {
   if (notes) msg += `Notes: ${notes}%0A`;
   msg += `%0A*PAYMENT:* ${methodNames[payMethod]||'—'}%0A`;
   msg += `%0A(Receipt attached separately)%0A%0ASalamat po! 🙏`;
-  window.open(`https://wa.me/639776033476?text=${msg}`, '_blank');
+  window.open(`https://wa.me/63?text=${msg}`, '_blank');
 }
 
 // INIT
